@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Sleep Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Global Styles & Dark Mode --- */
+        :root {
+            --color-primary: #8e44ad; /* Deep Purple */
+            --color-secondary: #3498db; /* Blue */
+            --color-background: #2c3e50; /* Dark Blue/Gray */
+            --color-card-bg: #34495e; /* Slightly Lighter Dark */
+            --color-text: #ecf0f1; /* Soft White */
+            --color-text-light: #bdc3c7; /* Light Gray */
+            --border-radius: 8px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            color: var(--color-primary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        /* --- Tab Navigation --- */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--color-text-light);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: var(--color-text);
+            border-bottom: 3px solid var(--color-secondary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* --- Calculator Cards --- */
+        .calc-card {
+            background-color: var(--color-card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input[type="time"], input[type="number"] {
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: #4a637a; /* Input background */
+            color: var(--color-text);
+            font-size: 1.1em;
+            width: 100%;
+            max-width: 300px;
+            margin-right: 10px;
+        }
+
+        .duration-input input[type="number"] {
+            width: 80px;
+            text-align: center;
+        }
+
+        button {
+            background-color: var(--color-primary);
+            color: var(--color-text);
+            border: none;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #9b59b6;
+        }
+
+        /* --- Results and Settings --- */
+        .result-area {
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px dashed var(--color-secondary);
+            border-radius: var(--border-radius);
+        }
+
+        .large-result {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: var(--color-secondary);
+        }
+
+        #bedtimeResults {
+            list-style-type: none;
+        }
+
+        #bedtimeResults li {
+            font-size: 1.2em;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--color-card-bg);
+        }
+
+        .settings {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #4a637a;
+            border-radius: var(--border-radius);
+        }
+
+        .settings summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* --- Info Section --- */
+        .info-section {
+            margin-top: 40px;
+        }
+
+        .info-card {
+            background-color: var(--color-card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+
+        .info-card summary {
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--color-secondary);
+        }
+
+        /* Table Style */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-background);
+        }
+
+        th {
+            background-color: var(--color-primary);
+            color: var(--color-text);
+        }
+
+        tr:nth-child(even) {
+            background-color: #3f5872;
+        }
+
+        /* Horizontal Rule */
+        hr {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0), var(--color-text-light), rgba(0, 0, 0, 0));
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌙 Sleep Cycle & Length Calculator</h1>
+    </header>
+
+    <main class="container">
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'CycleCalc')">Sleep Cycle</button>
+            <button class="tab-button" onclick="openTab(event, 'LengthCalc')">Sleep Length</button>
+        </div>
+
+        <div id="CycleCalc" class="tab-content active">
+            <h2>Calculate Bedtime or Wake Time based on Cycles</h2>
+            <div class="calc-card">
+                <p>I want to **wake up** at:</p>
+                <input type="time" id="wakeTimeInputCycle" value="07:00">
+                <button onclick="calculateBedtimes()">Suggest Bedtimes</button>
+                <div class="result-area">
+                    <p>Suggested Bedtimes (for 4-6 cycles):</p>
+                    <ul id="bedtimeResults"></ul>
+                </div>
+
+                <details class="settings">
+                    <summary>Settings</summary>
+                    <p>Sleep Cycle Length (minutes): 
+                        <input type="number" id="cycleLength" value="90" min="60" max="120">
+                    </p>
+                    <p>Time to Fall Asleep (minutes): 
+                        <input type="number" id="fallAsleepTime" value="14" min="0">
+                    </p>
+                </details>
+            </div>
+        </div>
+
+        <div id="LengthCalc" class="tab-content">
+            <h2>Calculate Time based on Duration</h2>
+            <div class="calc-card">
+                <p>I want to **go to bed** at:</p>
+                <input type="time" id="bedTimeInputLength" value="23:00">
+                <p>I want to sleep for (Hours:Minutes):</p>
+                <div class="duration-input">
+                    <input type="number" id="sleepDurationHours" value="8" min="0" max="24"> Hrs
+                    <input type="number" id="sleepDurationMinutes" value="0" min="0" max="59"> Mins
+                </div>
+                <button onclick="calculateWakeTime()">Calculate Wake Time</button>
+                <div class="result-area">
+                    <p>You should wake up at:</p>
+                    <p id="wakeTimeResult" class="large-result">--:--</p>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <section class="info-section">
+            <h2>🧠 Understanding Your Sleep</h2>
+            
+            <details class="info-card">
+                <summary>REM and Non-REM Sleep Cycles</summary>
+                <p>A full sleep cycle typically lasts **90 minutes**. Non-REM sleep (deep rest, energy restoration) precedes REM sleep (dreaming, memory consolidation). Waking up at the end of a cycle usually makes you feel more refreshed. 
+
+[attachment_0](attachment)
+</p>
+            </details>
+
+            <details class="info-card">
+                <summary>Recommended Sleep Hours (CDC Guidelines)</summary>
+                <table>
+                    <thead>
+                        <tr><th>Age Group</th><th>Recommended Hours</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>3–5 years</td><td>10–13 hours</td></tr>
+                        <tr><td>6–12 years</td><td>9–12 hours</td></tr>
+                        <tr><td>13–18 years</td><td>8–10 hours</td></tr>
+                        <tr><td>**18–60 years**</td><td>**7 or more hours**</td></tr>
+                        <tr><td>65+ years</td><td>7–8 hours</td></tr>
+                    </tbody>
+                </table>
+            </details>
+        </section>
+    </main>
+
+    <script>
+        // --- Tab Switching Logic ---
+        function openTab(evt, tabName) {
+            // Get all elements with class="tab-content" and hide them
+            const tabcontents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontents.length; i++) {
+                tabcontents[i].classList.remove("active");
+            }
+
+            // Get all elements with class="tab-button" and remove the "active" class
+            const tablinks = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // Ensure the first tab is open on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Manually trigger the first tab content to show on page load
+            document.getElementById('CycleCalc').classList.add('active');
+            
+            // Run the calculator once with default settings on load for a clean result area
+            calculateBedtimes(); 
+            document.getElementById('wakeTimeResult').textContent = '07:00';
+        });
+
+
+        // --- Sleep Cycle Calculator Logic ---
+        function calculateBedtimes() {
+            const wakeTimeStr = document.getElementById('wakeTimeInputCycle').value;
+            const cycleLength = parseInt(document.getElementById('cycleLength').value);
+            const fallAsleepTime = parseInt(document.getElementById('fallAsleepTime').value);
+            const resultsList = document.getElementById('bedtimeResults');
+            resultsList.innerHTML = ''; // Clear previous results
+
+            if (!wakeTimeStr || isNaN(cycleLength) || isNaN(fallAsleepTime)) {
+                resultsList.innerHTML = '<li>Please ensure all fields are correctly filled.</li>';
+                return;
+            }
+
+            // Convert wake time string (HH:MM) to minutes past midnight
+            const [hours, minutes] = wakeTimeStr.split(':').map(Number);
+            let wakeTimeMins = (hours * 60) + minutes;
+            
+            // Suggest 6, 5, and 4 full cycles
+            const cyclesToSuggest = [6, 5, 4]; 
+
+            cyclesToSuggest.forEach(numCycles => {
+                // Total sleep time = (numCycles * cycleLength) + timeToFallAsleep
+                const totalTimeMins = (numCycles * cycleLength) + fallAsleepTime;
+                
+                // Bedtime = Wake time - Total Time
+                let bedtimeMins = wakeTimeMins - totalTimeMins;
+
+                // Handle wrap-around for the previous day (if bedtimeMins is negative)
+                if (bedtimeMins < 0) {
+                    bedtimeMins += (24 * 60); // Add 24 hours in minutes
+                }
+
+                // Convert bedtimeMins back to HH:MM format
+                const bedHours = Math.floor(bedtimeMins / 60) % 24; // Ensure hours wrap around 24
+                const bedMins = bedtimeMins % 60;
+
+                const formattedTime = 
+                    String(bedHours).padStart(2, '0') + ':' + 
+                    String(bedMins).padStart(2, '0');
+
+                const listItem = document.createElement('li');
+                listItem.textContent = `${formattedTime} (for ${numCycles} cycles)`;
+                resultsList.appendChild(listItem);
+            });
+        }
+
+        // --- Sleep Length Calculator Logic ---
+        function calculateWakeTime() {
+            const bedTimeStr = document.getElementById('bedTimeInputLength').value;
+            const durationHours = parseInt(document.getElementById('sleepDurationHours').value);
+            const durationMinutes = parseInt(document.getElementById('sleepDurationMinutes').value);
+            const resultElement = document.getElementById('wakeTimeResult');
+
+            if (!bedTimeStr || isNaN(durationHours) || isNaN(durationMinutes)) {
+                resultElement.textContent = 'Error!';
+                return;
+            }
+
+            // Convert bed time string (HH:MM) to minutes past midnight
+            const [bedHours, bedMins] = bedTimeStr.split(':').map(Number);
+            let bedTimeMins = (bedHours * 60) + bedMins;
+
+            // Calculate total sleep time in minutes
+            const totalDurationMins = (durationHours * 60) + durationMinutes;
+
+            // Calculate wake time in minutes
+            let wakeTimeMins = bedTimeMins + totalDurationMins;
+
+            // Handle wrap-around for the next day
+            // The modulus operator (%) automatically handles the wrap-around
+            const wakeHours = Math.floor(wakeTimeMins / 60) % 24;
+            const wakeMins = wakeTimeMins % 60;
+
+            // Convert back to HH:MM format
+            const formattedTime = 
+                String(wakeHours).padStart(2, '0') + ':' + 
+                String(wakeMins).padStart(2, '0');
+
+            resultElement.textContent = formattedTime;
+        }
+    </script>
+</body>
+</html>
